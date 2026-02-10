@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+*.log
+
+# Prisma
+/src/generated/prisma
+
+# Temporary directories
+temp_prisma_check/
+prisma_old/
+
+# Test files
+test-prisma.js
+verify_*.txt

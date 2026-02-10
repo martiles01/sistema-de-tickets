@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   // USER, TECHNICIAN, SUPERVISOR, ADMIN
+  tenantId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignedTickets Ticket[] @relation("AssignedTickets")
+  createdTickets  Ticket[] @relation("CreatedTickets")
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  status      String   @default("OPEN")
+  priority    String   @default("MEDIUM")
+  category    String   @default("General")
+  subcategory String?
+  tenantId    String
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resolvedAt  DateTime?
+  slaTargetDate DateTime?
+  satisfactionScore Int?
+
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  
+  authorId     String? 
+  author       User?   @relation("CreatedTickets", fields: [authorId], references: [id])
+
+  interactions TicketInteraction[]
+}
+
+model TicketInteraction {
+  id        String   @id @default(uuid())
+  content   String
+  type      String   // COMMENT, STATUS_CHANGE
+  createdAt DateTime @default(now())
+  
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  
+  authorId  String
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  severity    String   // INFO, WARNING, ERROR, CRITICAL
+  userId      String   
+  tenantId    String
+  resourceId  String?
+  details     Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+}
